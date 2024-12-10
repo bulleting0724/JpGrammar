@@ -9,10 +9,28 @@ public enum Particles {
     YO("よ"),
     NE("ね"),
     NO("の"),
-    TO("と");
+    TO("と"),
+    NONI("のに"),
+    KEDO("けど"),
+    KARA("から"),
+    KA("か"),
+    HI("へ"),
+    MADE("まで"),
+    MO("も"),
+    YA("や"),
+    YONE("よね"),
+    YORI("より"),
+    SHI("し"),
+    NA("な"),
+    KURAI("くらい"),
+    GURAI("ぐらい"),
+    DAKE("だけ"),
+    NARA("なら"),
+    TODE("ので"),
+    DESU("です");
 
 
-    public String kana;
+    public final String kana;
     Particles(String kana) {
         this.kana = kana;
     }

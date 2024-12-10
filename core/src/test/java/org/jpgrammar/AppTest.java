@@ -3,10 +3,14 @@ package org.jpgrammar;
 import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
+import lombok.extern.slf4j.Slf4j;
+
+import java.util.Arrays;
 
 /**
  * Unit test for simple App.
  */
+@Slf4j
 public class AppTest 
     extends TestCase
 {
@@ -35,4 +39,24 @@ public class AppTest
     {
         assertTrue( true );
     }
+
+    /**
+     * test split sentence by punctuation mark "、"
+     */
+    public void testSplitByPunctuation()
+    {
+        PunctuationSplit punctuationSplit = new PunctuationSplit();
+        log.info(Arrays.toString(punctuationSplit.split("お父さんが買ったのは、バナナです")));
+    }
+    /**
+     * test split sentence by punctuation mark "、"
+     */
+    public void testCalculateParticlePosInSentence()
+    {
+        ParticleSplit particleSplit = new ParticleSplit();
+        log.info(Arrays.toString(particleSplit.split(
+                "NASA探査機ジュノーがとらえた最新画像")));
+
+    }
+
 }
