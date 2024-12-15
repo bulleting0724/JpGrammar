@@ -10,7 +10,7 @@ import java.io.File;
 
 public class ReadXMLFile {
 
-    public static void main(String argv[]) {
+    public static void main(String[] argv) {
         try {
             File fXmlFile = new File("/Users/apple/git/JpGrammar/core/src/main/resources/JMdict_e.xml");
             DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();

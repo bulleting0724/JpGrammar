@@ -1,0 +1,46 @@
+<JMdict>
+    <entry>
+        <ent_seq>1000000</ent_seq>
+        <r_ele>
+            <reb>ヽ</reb>
+        </r_ele>
+        <sense>
+            <pos>unc</pos>
+            <xref>一の字点</xref>
+            <gloss>repetition mark in katakana</gloss>
+        </sense>
+    </entry>
+    <entry>
+        <ent_seq>1000010</ent_seq>
+        <r_ele>
+            <reb>ヾ</reb>
+        </r_ele>
+        <sense>
+            <pos>unc</pos>
+            <gloss g_type="expl">voiced repetition mark in katakana</gloss>
+        </sense>
+    </entry>
+    <entry>
+        <ent_seq>1000110</ent_seq>
+        <k_ele>
+            <keb>ＣＤプレーヤー</keb>
+            <ke_pri>spec1</ke_pri>
+        </k_ele>
+        <k_ele>
+            <keb>ＣＤプレイヤー</keb>
+        </k_ele>
+        <r_ele>
+            <reb>シーディープレーヤー</reb>
+            <re_restr>ＣＤプレーヤー</re_restr>
+            <re_pri>spec1</re_pri>
+        </r_ele>
+        <r_ele>
+            <reb>シーディープレイヤー</reb>
+            <re_restr>ＣＤプレイヤー</re_restr>
+        </r_ele>
+        <sense>
+            <pos>&n;</pos>
+            <gloss>CD player</gloss>
+        </sense>
+    </entry>
+</JMdict>

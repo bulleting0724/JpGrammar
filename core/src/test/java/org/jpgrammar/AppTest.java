@@ -4,8 +4,14 @@ import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
 import lombok.extern.slf4j.Slf4j;
+import org.xml.sax.SAXException;
 
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.parsers.SAXParser;
+import javax.xml.parsers.SAXParserFactory;
+import java.io.IOException;
 import java.util.Arrays;
+import java.util.List;
 
 /**
  * Unit test for simple App.
@@ -56,6 +62,36 @@ public class AppTest
         ParticleSplit particleSplit = new ParticleSplit();
         log.info(Arrays.toString(particleSplit.split(
                 "NASA探査機ジュノーがとらえた最新画像")));
+    }
+
+    /**
+     * test to parse jmDict xml"、"
+     */
+    public void testParseJmDictXml() throws ParserConfigurationException, SAXException, IOException {
+        SAXParserFactory factory = SAXParserFactory.newInstance();
+        SAXParser saxParser = factory.newSAXParser();
+        JmdictHandler baeldungHandler = new JmdictHandler();
+        saxParser.parse("src/test/resources/staff.xml", baeldungHandler);
+
+        JmDict result = baeldungHandler.getWebsite();
+
+        assertNotNull(result);
+        List<BaeldungArticle> articles = result.getArticleList();
+
+        assertNotNull(articles);
+        assertEquals(3, articles.size());
+
+        BaeldungArticle articleOne = articles.get(0);
+        assertEquals("Parsing an XML File Using SAX Parser", articleOne.getTitle());
+        assertEquals("SAX Parser's Lorem ipsum...", articleOne.getContent());
+
+        BaeldungArticle articleTwo = articles.get(1);
+        assertEquals("Parsing an XML File Using DOM Parser", articleTwo.getTitle());
+        assertEquals("DOM Parser's Lorem ipsum...", articleTwo.getContent());
+
+        BaeldungArticle articleThree = articles.get(2);
+        assertEquals("Parsing an XML File Using StAX Parser", articleThree.getTitle());
+        assertEquals("StAX's Lorem ipsum...", articleThree.getContent());
 
     }
 
