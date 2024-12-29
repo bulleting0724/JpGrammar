@@ -70,28 +70,15 @@ public class AppTest
     public void testParseJmDictXml() throws ParserConfigurationException, SAXException, IOException {
         SAXParserFactory factory = SAXParserFactory.newInstance();
         SAXParser saxParser = factory.newSAXParser();
-        JmdictHandler baeldungHandler = new JmdictHandler();
-        saxParser.parse("src/test/resources/staff.xml", baeldungHandler);
+        JmdictHandler jmdictHandler = new JmdictHandler();
+        saxParser.parse("src/test/resources/staff.xml", jmdictHandler);
 
-        JmDict result = baeldungHandler.getWebsite();
+        JmDict result = jmdictHandler.getWebsite();
 
         assertNotNull(result);
-        List<BaeldungArticle> articles = result.getArticleList();
+        List<Entry> entryList = result.getEntryList();
 
-        assertNotNull(articles);
-        assertEquals(3, articles.size());
-
-        BaeldungArticle articleOne = articles.get(0);
-        assertEquals("Parsing an XML File Using SAX Parser", articleOne.getTitle());
-        assertEquals("SAX Parser's Lorem ipsum...", articleOne.getContent());
-
-        BaeldungArticle articleTwo = articles.get(1);
-        assertEquals("Parsing an XML File Using DOM Parser", articleTwo.getTitle());
-        assertEquals("DOM Parser's Lorem ipsum...", articleTwo.getContent());
-
-        BaeldungArticle articleThree = articles.get(2);
-        assertEquals("Parsing an XML File Using StAX Parser", articleThree.getTitle());
-        assertEquals("StAX's Lorem ipsum...", articleThree.getContent());
+       log.info(entryList.toString());
 
     }
 

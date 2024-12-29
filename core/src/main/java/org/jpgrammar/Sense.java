@@ -1,6 +1,11 @@
 package org.jpgrammar;
 
+import lombok.Data;
+
+import java.util.List;
+
+@Data
 public class Sense {
-    String pos;
+    List<String> pos;
     String gloss;
 }
