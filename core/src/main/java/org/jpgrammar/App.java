@@ -2,12 +2,10 @@ package org.jpgrammar;
 
 
 import edu.cmu.lti.jawjaw.JAWJAW;
-import edu.cmu.lti.jawjaw.db.*;
-import edu.cmu.lti.jawjaw.pobj.*;
+import edu.cmu.lti.jawjaw.pobj.POS;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.Arrays;
-import java.util.List;
 import java.util.Set;
 
 /**
@@ -42,22 +40,5 @@ public class App
         System.out.println( word+" entails : \t\t"+ consequents );
         System.out.println( "translations of "+word+" : \t"+ translations );
         System.out.println( "definitions of "+word+" : \t"+ definitions );
-    }
-
-    private static void run( final String word, final POS pos ) {
-        // Access the Japanese WordNet DB and process the raw data
-        List<Word> words = WordDAO.findWordsByLemmaAndPos(word, pos);
-        List<Sense> senses = SenseDAO.findSensesByWordid( words.get(0).getWordid() );
-        String synsetId = senses.get(0).getSynset();
-        Synset synset = SynsetDAO.findSynsetBySynset( synsetId );
-        SynsetDef synsetDef = SynsetDefDAO.findSynsetDefBySynsetAndLang(synsetId, Lang.eng);
-        List<Synlink> synlinks = SynlinkDAO.findSynlinksBySynset( synsetId );
-        // Showing the result
-        log.info(String.valueOf(words.get(0)));
-        log.info(String.valueOf(senses));
-        log.info(String.valueOf(senses.get(0)));
-        log.info(String.valueOf(synset));
-        log.info(String.valueOf(synsetDef));
-        log.info(String.valueOf(synlinks.get(0)));
     }
 }

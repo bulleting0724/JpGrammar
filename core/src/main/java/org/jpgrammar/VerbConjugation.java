@@ -1,7 +1,7 @@
 package org.jpgrammar;
 
 /**
- * the verb form convert a inflection form to dictionary form
+ * the verb form convert an inflection form to dictionary form
  */
 public abstract class VerbConjugation {
     public String name;

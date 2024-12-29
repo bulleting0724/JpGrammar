@@ -9,10 +9,7 @@ public class PastForm extends VerbConjugation{
 
     @Override
     public boolean isFormMatched(String word) {
-        if ("た".equals(word)) {
-            return true;
-        }
-        return false;
+        return "た".equals(word);
     }
 
 
