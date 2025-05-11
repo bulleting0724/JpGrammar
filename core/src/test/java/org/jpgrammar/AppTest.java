@@ -82,4 +82,8 @@ public class AppTest
 
     }
 
+    public void testGrammarAnalyzer() {
+        GrammarAnalyzer.analyze("NASA探査機ジュノーがとらえた最新画像");
+    }
+
 }
