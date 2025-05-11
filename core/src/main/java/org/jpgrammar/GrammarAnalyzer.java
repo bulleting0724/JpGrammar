@@ -52,7 +52,12 @@ public class GrammarAnalyzer {
             switch (pos) {
                 case "助詞":
                 case "助動詞":
-                    System.out.println("助詞: " + surface + readingInfo + meaning);
+                    String contextMeaning = getContextualParticleMeaning(tokens, i);
+                    if (contextMeaning != null) {
+                        System.out.println("助詞: " + surface + readingInfo + " - " + contextMeaning);
+                    } else {
+                        System.out.println("助詞: " + surface + readingInfo + meaning);
+                    }
                     break;
                 case "動詞":
                     System.out.printf("動詞: %s (%s)%s%s%n",
@@ -77,4 +82,36 @@ public class GrammarAnalyzer {
         }
     }
 
+    private static String getContextualParticleMeaning(List<Token> tokens, int index) {
+        String particle = tokens.get(index).getSurface();
+        String nextSurface = (index + 1 < tokens.size()) ? tokens.get(index + 1).getSurface() : "";
+        String compound = particle + nextSurface;
+
+        switch (compound) {
+            case "には": return "for; in regard to";
+            case "として": return "as (a role)";
+            case "にとって": return "for (someone); from the perspective of";
+            case "により":
+            case "によって": return "due to; by means of";
+            case "について": return "about; concerning";
+            case "に対して": return "towards; against; in contrast to";
+            case "を通して": return "through; via";
+        }
+
+        switch (particle) {
+            case "に":
+                if (index + 1 < tokens.size()) {
+                    String nextPos = tokens.get(index + 1).getPartOfSpeechLevel1();
+                    if ("動詞".equals(nextPos)) {
+                        return "to (destination); toward";
+                    }
+                }
+                return "location/time marker; target of action";
+            case "は": return "topic marker";
+            case "を": return "direct object marker";
+            case "で": return "means/location marker";
+            case "が": return "subject marker";
+            default: return null;
+        }
+    }
 }
