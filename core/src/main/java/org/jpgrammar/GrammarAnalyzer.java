@@ -3,8 +3,6 @@ package org.jpgrammar;
 import com.atilika.kuromoji.ipadic.Token;
 import com.atilika.kuromoji.ipadic.Tokenizer;
 
-import java.util.List;
-
 public class GrammarAnalyzer {
 
     private final static JMDictLoader jmDict;
@@ -16,6 +14,7 @@ public class GrammarAnalyzer {
             throw new RuntimeException(e);
         }
     }
+
     public static void analyze(String sentence) {
         Tokenizer tokenizer = new Tokenizer();
         for (Token token : tokenizer.tokenize(sentence)) {
@@ -23,26 +22,39 @@ public class GrammarAnalyzer {
             String pos = token.getPartOfSpeechLevel1();
             String baseForm = token.getBaseForm();
             String conjugationForm = token.getConjugationForm();
-            List<String> meanings = jmDict.getMeanings(baseForm);
 
-            String meaning = meanings.isEmpty() ? "" : " - " + String.join("; ", meanings);
+            JMDictLoader.Entry entry = jmDict.getEntry(baseForm);
+            String readingInfo = "";
+            if (entry != null && entry.kana != null) {
+                readingInfo = " [" + entry.kana + "/" + entry.romaji + "]";
+            }
+
+            String meaning = (entry != null && !entry.meanings.isEmpty())
+                    ? " - " + String.join("; ", entry.meanings)
+                    : "";
 
             switch (pos) {
                 case "助詞":
                 case "助動詞":
-                    System.out.println("助詞: " + surface + meaning);
+                    System.out.println("助詞: " + surface + readingInfo + meaning);
                     break;
                 case "動詞":
-                    System.out.printf("動詞: %s (%s)%s%n", baseForm,
-                        conjugationForm != null ? conjugationForm : "基本形", meaning);
+                    System.out.printf("動詞: %s (%s)%s%s%n",
+                            baseForm,
+                            conjugationForm != null ? conjugationForm : "基本形",
+                            readingInfo,
+                            meaning);
                     break;
                 case "形容詞":
-                    System.out.printf("形容詞: %s (%s)%s%n", baseForm,
-                        conjugationForm != null ? conjugationForm : "基本形", meaning);
+                    System.out.printf("形容詞: %s (%s)%s%s%n",
+                            baseForm,
+                            conjugationForm != null ? conjugationForm : "基本形",
+                            readingInfo,
+                            meaning);
                     break;
                 default:
                     if (!pos.equals("記号")) {
-                        System.out.println(pos + ": " + surface + meaning);
+                        System.out.println(pos + ": " + surface + readingInfo + meaning);
                     }
                     break;
             }
