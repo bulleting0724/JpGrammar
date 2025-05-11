@@ -43,17 +43,17 @@ public class JMDictLoader {
 
         for (int i = 0; i < entryList.getLength(); i++) {
             Element entry = (Element) entryList.item(i);
-            List<String> words = new ArrayList<>();
+            List<String> kebs = new ArrayList<>();
+            List<String> rebs = new ArrayList<>();
 
             NodeList kebList = entry.getElementsByTagName("keb");
             for (int j = 0; j < kebList.getLength(); j++) {
-                words.add(kebList.item(j).getTextContent());
+                kebs.add(kebList.item(j).getTextContent());
             }
 
             NodeList rebList = entry.getElementsByTagName("reb");
-            List<String> readings = new ArrayList<>();
             for (int j = 0; j < rebList.getLength(); j++) {
-                readings.add(rebList.item(j).getTextContent());
+                rebs.add(rebList.item(j).getTextContent());
             }
 
             List<String> glosses = new ArrayList<>();
@@ -62,19 +62,30 @@ public class JMDictLoader {
                 glosses.add(glossList.item(j).getTextContent());
             }
 
-            String kana = readings.isEmpty() ? null : readings.get(0);
+            String kana = !rebs.isEmpty() ? rebs.get(0) : (!kebs.isEmpty() ? kebs.get(0) : null);
             String romaji = kana != null ? kanaToRomaji(kana) : "";
 
             Entry entryObj = new Entry(kana, romaji, glosses);
 
-            for (String word : !words.isEmpty() ? words : readings) {
-                dict.put(word, entryObj);
+            for (String word : kebs) {
+                dict.putIfAbsent(word, entryObj);
+            }
+            for (String word : rebs) {
+                dict.putIfAbsent(word, entryObj);
             }
         }
     }
 
     public Entry getEntry(String word) {
         return dict.get(word);
+    }
+
+    public Entry findEntryFallback(String baseForm, String surface) {
+        Entry entry = getEntry(baseForm);
+        if (entry == null && surface != null && !surface.equals("*")) {
+            entry = getEntry(surface);
+        }
+        return entry;
     }
 
     private String kanaToRomaji(String kana) {
@@ -98,20 +109,19 @@ public class JMDictLoader {
 
         // 单音
         String[] kanaArr = {
-            "あ","い","う","え","お","か","き","く","け","こ","さ","す","せ","そ",
-            "た","て","と","な","に","ぬ","ね","の","は","ひ","へ","ほ",
+            "あ","い","う","え","お","か","き","く","け","こ","さ","し","す","せ","そ",
+            "た","ち","つ","て","と","な","に","ぬ","ね","の","は","ひ","ふ","へ","ほ",
             "ま","み","む","め","も","や","ゆ","よ","ら","り","る","れ","ろ",
-            "わ","を","ん","が","ぎ","ぐ","げ","ご","ざ","ず","ぜ","ぞ",
-            "だ","で","ど","ば","び","ぶ","べ","ぼ","ぱ","ぴ","ぷ","ぺ","ぽ"
+            "わ","を","ん","が","ぎ","ぐ","げ","ご","ざ","じ","ず","ぜ","ぞ",
+            "だ","ぢ","づ","で","ど","ば","び","ぶ","べ","ぼ","ぱ","ぴ","ぷ","ぺ","ぽ"
         };
         String[] romaArr = {
-            "a","i","u","e","o","ka","ki","ku","ke","ko","sa","su","se","so",
-            "ta","te","to","na","ni","nu","ne","no","ha","hi","he","ho",
+            "a","i","u","e","o","ka","ki","ku","ke","ko","sa","shi","su","se","so",
+            "ta","chi","tsu","te","to","na","ni","nu","ne","no","ha","hi","fu","he","ho",
             "ma","mi","mu","me","mo","ya","yu","yo","ra","ri","ru","re","ro",
-            "wa","wo","n","ga","gi","gu","ge","go","za","zu","ze","zo",
-            "da","de","do","ba","bi","bu","be","bo","pa","pi","pu","pe","po"
+            "wa","wo","n","ga","gi","gu","ge","go","za","ji","zu","ze","zo",
+            "da","ji","zu","de","do","ba","bi","bu","be","bo","pa","pi","pu","pe","po"
         };
-
         for (int i = 0; i < kanaArr.length; i++) {
             map.put(kanaArr[i], romaArr[i]);
         }
@@ -128,9 +138,7 @@ public class JMDictLoader {
         StringBuilder sb = new StringBuilder();
         for (char c : input.toCharArray()) {
             if (c >= 'ァ' && c <= 'ン') {
-                sb.append((char)(c - 0x60));  // カタカナ转为对应平假名
-            } else if (c == 'ー') {
-                sb.append("ー");  // 长音符保留
+                sb.append((char)(c - 0x60));  // カタカナ转为平假名
             } else {
                 sb.append(c);
             }

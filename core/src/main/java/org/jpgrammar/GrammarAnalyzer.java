@@ -3,6 +3,8 @@ package org.jpgrammar;
 import com.atilika.kuromoji.ipadic.Token;
 import com.atilika.kuromoji.ipadic.Tokenizer;
 
+import java.util.List;
+
 public class GrammarAnalyzer {
 
     private final static JMDictLoader jmDict;
@@ -17,21 +19,35 @@ public class GrammarAnalyzer {
 
     public static void analyze(String sentence) {
         Tokenizer tokenizer = new Tokenizer();
-        for (Token token : tokenizer.tokenize(sentence)) {
+        List<Token> tokens = tokenizer.tokenize(sentence);
+
+        for (int i = 0; i < tokens.size(); i++) {
+            Token token = tokens.get(i);
             String surface = token.getSurface();
             String pos = token.getPartOfSpeechLevel1();
             String baseForm = token.getBaseForm();
             String conjugationForm = token.getConjugationForm();
 
-            JMDictLoader.Entry entry = jmDict.getEntry(baseForm);
-            String readingInfo = "";
-            if (entry != null && entry.kana != null) {
-                readingInfo = " [" + entry.kana + "/" + entry.romaji + "]";
+            // 检查复合语法
+            CompositeGrammarDetector.MatchResult match = CompositeGrammarDetector.matchCompositeGrammar(tokens, i);
+            if (match != null) {
+                String grammar = match.grammarText;
+                JMDictLoader.Entry entry = jmDict.findEntryFallback(grammar, grammar);
+                String readingInfo = (entry != null && entry.kana != null) ?
+                        " [" + entry.kana + "/" + entry.romaji + "]" : "";
+                String meaning = (entry != null && !entry.meanings.isEmpty()) ?
+                        " - " + String.join("; ", entry.meanings) : "";
+
+                System.out.println("複合文法: " + grammar + readingInfo + meaning);
+                i += match.length - 1; // 跳过匹配到的 token
+                continue;
             }
 
-            String meaning = (entry != null && !entry.meanings.isEmpty())
-                    ? " - " + String.join("; ", entry.meanings)
-                    : "";
+            JMDictLoader.Entry entry = jmDict.findEntryFallback(baseForm, surface);
+            String readingInfo = (entry != null && entry.kana != null) ?
+                    " [" + entry.kana + "/" + entry.romaji + "]" : "";
+            String meaning = (entry != null && !entry.meanings.isEmpty()) ?
+                    " - " + String.join("; ", entry.meanings) : "";
 
             switch (pos) {
                 case "助詞":
