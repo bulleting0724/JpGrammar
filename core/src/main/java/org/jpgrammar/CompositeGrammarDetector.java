@@ -1,6 +1,7 @@
 package org.jpgrammar;
 
 import com.atilika.kuromoji.ipadic.Token;
+import lombok.extern.log4j.Log4j2;
 
 import java.io.BufferedReader;
 import java.io.InputStream;
@@ -8,6 +9,7 @@ import java.io.InputStreamReader;
 import java.util.*;
 import java.util.regex.Pattern;
 
+@Log4j2
 public class CompositeGrammarDetector {
 
     private static final List<GrammarRule> grammarRules = new ArrayList<>();
@@ -16,7 +18,7 @@ public class CompositeGrammarDetector {
         try {
             loadGrammarRules("composite_grammar.txt");
         } catch (Exception e) {
-            System.err.println("加载复合语法规则失败: " + e.getMessage());
+            log.error("加载复合语法规则失败: " + e.getMessage());
         }
     }
 

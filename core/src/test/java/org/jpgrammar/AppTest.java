@@ -83,7 +83,8 @@ public class AppTest
     }
 
     public void testGrammarAnalyzer() {
-        GrammarAnalyzer.analyze("NASA探査機ジュノーがとらえた最新画像");
+        log.info(GrammarAnalyzer.analyze(
+                "第二次大戦の対ドイツ戦勝80年を記念する一連の行事を終えたことを受けたメディア向け声明を発表し").toString());
     }
 
 }

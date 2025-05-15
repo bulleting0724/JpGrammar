@@ -2,9 +2,12 @@ package org.jpgrammar;
 
 import com.atilika.kuromoji.ipadic.Token;
 import com.atilika.kuromoji.ipadic.Tokenizer;
+import lombok.extern.log4j.Log4j2;
 
+import java.util.ArrayList;
 import java.util.List;
 
+@Log4j2
 public class GrammarAnalyzer {
 
     private final static JMDictLoader jmDict;
@@ -17,7 +20,10 @@ public class GrammarAnalyzer {
         }
     }
 
-    public static void analyze(String sentence) {
+    public static List<GrammarItem> analyze(String sentence) {
+        log.info("Analyzing: {}", sentence);
+        List<GrammarItem> results = new ArrayList<>();
+
         Tokenizer tokenizer = new Tokenizer();
         List<Token> tokens = tokenizer.tokenize(sentence);
 
@@ -33,53 +39,59 @@ public class GrammarAnalyzer {
             if (match != null) {
                 String grammar = match.grammarText;
                 JMDictLoader.Entry entry = jmDict.findEntryFallback(grammar, grammar);
-                String readingInfo = (entry != null && entry.kana != null) ?
-                        " [" + entry.kana + "/" + entry.romaji + "]" : "";
-                String meaning = (entry != null && !entry.meanings.isEmpty()) ?
-                        " - " + String.join("; ", entry.meanings) : "";
-
-                System.out.println("複合文法: " + grammar + readingInfo + meaning);
-                i += match.length - 1; // 跳过匹配到的 token
+                GrammarItem item = new GrammarItem("複合文法", grammar, grammar,
+                        entry != null ? entry.kana : null,
+                        entry != null ? entry.romaji : null,
+                        entry != null ? entry.meanings : null, null);
+                results.add(item);
+                i += match.length - 1;
                 continue;
             }
 
             JMDictLoader.Entry entry = jmDict.findEntryFallback(baseForm, surface);
-            String readingInfo = (entry != null && entry.kana != null) ?
-                    " [" + entry.kana + "/" + entry.romaji + "]" : "";
-            String meaning = (entry != null && !entry.meanings.isEmpty()) ?
-                    " - " + String.join("; ", entry.meanings) : "";
 
             switch (pos) {
                 case "助詞":
                 case "助動詞":
-                    String contextMeaning = getContextualParticleMeaning(tokens, i);
-                    if (contextMeaning != null) {
-                        System.out.println("助詞: " + surface + readingInfo + " - " + contextMeaning);
-                    } else {
-                        System.out.println("助詞: " + surface + readingInfo + meaning);
+                    // 如果是助动词 "た"，且前面是动词，则不单独输出
+                    if ("た".equals(surface) && i > 0 && "動詞".equals(tokens.get(i - 1).getPartOfSpeechLevel1())) {
+                        break; // 跳过输出
                     }
+                    String contextMeaning = getContextualParticleMeaning(tokens, i);
+                    results.add(new GrammarItem("助詞", surface, baseForm,
+                            entry != null ? entry.kana : null,
+                            entry != null ? entry.romaji : null,
+                            contextMeaning != null ? List.of(contextMeaning)
+                                                   : (entry != null ? entry.meanings : null),
+                            null));
                     break;
                 case "動詞":
-                    System.out.printf("動詞: %s (%s)%s%s%n",
-                            baseForm,
-                            conjugationForm != null ? conjugationForm : "基本形",
-                            readingInfo,
-                            meaning);
+                    results.add(new GrammarItem("動詞", surface, baseForm,
+                            entry != null ? entry.kana : null,
+                            entry != null ? entry.romaji : null,
+                            entry != null ? entry.meanings : null,
+                            conjugationForm));
                     break;
                 case "形容詞":
-                    System.out.printf("形容詞: %s (%s)%s%s%n",
-                            baseForm,
-                            conjugationForm != null ? conjugationForm : "基本形",
-                            readingInfo,
-                            meaning);
+                    results.add(new GrammarItem("形容詞", surface, baseForm,
+                            entry != null ? entry.kana : null,
+                            entry != null ? entry.romaji : null,
+                            entry != null ? entry.meanings : null,
+                            conjugationForm));
                     break;
                 default:
                     if (!pos.equals("記号")) {
-                        System.out.println(pos + ": " + surface + readingInfo + meaning);
+                        results.add(new GrammarItem(pos, surface, baseForm,
+                                entry != null ? entry.kana : null,
+                                entry != null ? entry.romaji : null,
+                                entry != null ? entry.meanings : null,
+                                null));
                     }
                     break;
             }
         }
+
+        return results;
     }
 
     private static String getContextualParticleMeaning(List<Token> tokens, int index) {
