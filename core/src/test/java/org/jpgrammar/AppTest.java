@@ -46,42 +46,6 @@ public class AppTest
         assertTrue( true );
     }
 
-    /**
-     * test split sentence by punctuation mark "、"
-     */
-    public void testSplitByPunctuation()
-    {
-        PunctuationSplit punctuationSplit = new PunctuationSplit();
-        log.info(Arrays.toString(punctuationSplit.split("お父さんが買ったのは、バナナです")));
-    }
-    /**
-     * test split sentence by punctuation mark "、"
-     */
-    public void testCalculateParticlePosInSentence()
-    {
-        ParticleSplit particleSplit = new ParticleSplit();
-        log.info(Arrays.toString(particleSplit.split(
-                "NASA探査機ジュノーがとらえた最新画像")));
-    }
-
-    /**
-     * test to parse jmDict xml"、"
-     */
-    public void testParseJmDictXml() throws ParserConfigurationException, SAXException, IOException {
-        SAXParserFactory factory = SAXParserFactory.newInstance();
-        SAXParser saxParser = factory.newSAXParser();
-        JmdictHandler jmdictHandler = new JmdictHandler();
-        saxParser.parse("src/test/resources/staff.xml", jmdictHandler);
-
-        JmDict result = jmdictHandler.getWebsite();
-
-        assertNotNull(result);
-        List<Entry> entryList = result.getEntryList();
-
-       log.info(entryList.toString());
-
-    }
-
     public void testGrammarAnalyzer() {
         log.info(GrammarAnalyzer.analyze(
                 "第二次大戦の対ドイツ戦勝80年を記念する一連の行事を終えたことを受けたメディア向け声明を発表し").toString());
