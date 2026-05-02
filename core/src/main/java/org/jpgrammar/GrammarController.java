@@ -1,13 +1,11 @@
 package org.jpgrammar;
 
-import lombok.Data;
-import lombok.Getter;
-import lombok.Setter;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
+@CrossOrigin(origins = "*")
 @RequestMapping("/api")
 public class GrammarController {
 
@@ -18,16 +16,28 @@ public class GrammarController {
         return resp;
     }
 
-    @Setter
-    @Getter
     public static class SentenceRequest {
         private String sentence;
 
+        public String getSentence() {
+            return sentence;
+        }
+
+        public void setSentence(String sentence) {
+            this.sentence = sentence;
+        }
     }
 
-    @Data
-    public class R {
+    public static class R {
         private List<GrammarItem> result;
+
+        public List<GrammarItem> getResult() {
+            return result;
+        }
+
+        public void setResult(List<GrammarItem> result) {
+            this.result = result;
+        }
     }
 
 }

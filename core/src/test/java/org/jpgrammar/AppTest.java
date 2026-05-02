@@ -3,23 +3,17 @@ package org.jpgrammar;
 import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
-import lombok.extern.slf4j.Slf4j;
-import org.xml.sax.SAXException;
 
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.parsers.SAXParser;
-import javax.xml.parsers.SAXParserFactory;
-import java.io.IOException;
-import java.util.Arrays;
-import java.util.List;
+import java.util.logging.Logger;
 
 /**
  * Unit test for simple App.
  */
-@Slf4j
 public class AppTest 
     extends TestCase
 {
+    private static final Logger log = Logger.getLogger(AppTest.class.getName());
+
     /**
      * Create the test case
      *

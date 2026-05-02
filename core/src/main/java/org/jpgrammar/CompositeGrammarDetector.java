@@ -1,24 +1,24 @@
 package org.jpgrammar;
 
 import com.atilika.kuromoji.ipadic.Token;
-import lombok.extern.log4j.Log4j2;
 
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.*;
+import java.util.logging.Logger;
 import java.util.regex.Pattern;
 
-@Log4j2
 public class CompositeGrammarDetector {
 
+    private static final Logger log = Logger.getLogger(CompositeGrammarDetector.class.getName());
     private static final List<GrammarRule> grammarRules = new ArrayList<>();
 
     static {
         try {
             loadGrammarRules("composite_grammar.txt");
         } catch (Exception e) {
-            log.error("加载复合语法规则失败: " + e.getMessage());
+            log.severe("加载复合语法规则失败: " + e.getMessage());
         }
     }
 

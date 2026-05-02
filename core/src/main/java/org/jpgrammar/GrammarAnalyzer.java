@@ -2,14 +2,14 @@ package org.jpgrammar;
 
 import com.atilika.kuromoji.ipadic.Token;
 import com.atilika.kuromoji.ipadic.Tokenizer;
-import lombok.extern.log4j.Log4j2;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Logger;
 
-@Log4j2
 public class GrammarAnalyzer {
 
+    private static final Logger log = Logger.getLogger(GrammarAnalyzer.class.getName());
     private final static JMDictLoader jmDict;
     static {
         jmDict = new JMDictLoader();
@@ -20,8 +20,12 @@ public class GrammarAnalyzer {
         }
     }
 
+    public static JMDictLoader dictionary() {
+        return jmDict;
+    }
+
     public static List<GrammarItem> analyze(String sentence) {
-        log.info("Analyzing: {}", sentence);
+        log.info("Analyzing: " + sentence);
         List<GrammarItem> results = new ArrayList<>();
 
         Tokenizer tokenizer = new Tokenizer();

@@ -8,18 +8,62 @@ import java.util.*;
 public class JMDictLoader {
 
     public static class Entry {
+        public final String word;
         public final String kana;
         public final String romaji;
+        public final List<String> writings;
+        public final List<String> readings;
         public final List<String> meanings;
+        public final List<String> partsOfSpeech;
+        private final List<String> searchKeys;
 
         public Entry(String kana, String romaji, List<String> meanings) {
+            this(kana, kana, romaji, List.of(), kana != null ? List.of(kana) : List.of(), meanings, List.of());
+        }
+
+        public Entry(String word, String kana, String romaji, List<String> writings,
+                     List<String> readings, List<String> meanings, List<String> partsOfSpeech) {
+            this.word = word;
             this.kana = kana;
             this.romaji = romaji;
-            this.meanings = meanings;
+            this.writings = List.copyOf(writings);
+            this.readings = List.copyOf(readings);
+            this.meanings = List.copyOf(meanings);
+            this.partsOfSpeech = List.copyOf(partsOfSpeech);
+            this.searchKeys = buildSearchKeys(word, this.writings, this.readings, romaji);
+        }
+
+        private static List<String> buildSearchKeys(String word, List<String> writings, List<String> readings, String romaji) {
+            LinkedHashSet<String> keys = new LinkedHashSet<>();
+            if (word != null && !word.isBlank()) {
+                keys.add(word);
+            }
+            keys.addAll(writings);
+            keys.addAll(readings);
+            if (romaji != null && !romaji.isBlank()) {
+                keys.add(romaji);
+            }
+            return keys.stream()
+                    .filter(key -> key != null && !key.isBlank())
+                    .map(key -> key.toLowerCase(Locale.ROOT))
+                    .toList();
+        }
+
+        public boolean matchesExact(String query) {
+            return searchKeys.stream().anyMatch(query::equals);
+        }
+
+        public boolean matchesPrefix(String query) {
+            return searchKeys.stream().anyMatch(key -> key.startsWith(query));
+        }
+
+        public boolean matchesContains(String query) {
+            return searchKeys.stream().anyMatch(key -> key.contains(query));
         }
     }
 
     private final Map<String, Entry> dict = new HashMap<>();
+    private final List<Entry> entries = new ArrayList<>();
 
     public void load(String resourcePath) throws Exception {
 // 通过类加载器读取 resources 目录中的 jmdict.xml
@@ -29,12 +73,9 @@ public class JMDictLoader {
         }
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
         // 设置实体展开数量上限（设置为无限大或较大值）
-        try {
-            factory.setAttribute("http://www.oracle.com/xml/jaxp/properties/entityExpansionLimit", "1000000");
-        } catch (IllegalArgumentException e) {
-            // 某些 JDK 不支持这个属性，不处理即可
-            System.err.println("JAXP 安全属性设置失败，忽略。");
-        }
+        setFactoryAttribute(factory, "http://www.oracle.com/xml/jaxp/properties/entityExpansionLimit", "1000000");
+        setFactoryAttribute(factory, "http://www.oracle.com/xml/jaxp/properties/totalEntitySizeLimit", "0");
+        setFactoryAttribute(factory, "jdk.xml.totalEntitySizeLimit", "0");
         DocumentBuilder builder = factory.newDocumentBuilder();
         Document doc = builder.parse(is);
         doc.getDocumentElement().normalize();
@@ -62,17 +103,34 @@ public class JMDictLoader {
                 glosses.add(glossList.item(j).getTextContent());
             }
 
+            List<String> partsOfSpeech = new ArrayList<>();
+            NodeList posList = entry.getElementsByTagName("pos");
+            for (int j = 0; j < posList.getLength(); j++) {
+                partsOfSpeech.add(posList.item(j).getTextContent());
+            }
+
             String kana = !rebs.isEmpty() ? rebs.get(0) : (!kebs.isEmpty() ? kebs.get(0) : null);
             String romaji = kana != null ? kanaToRomaji(kana) : "";
+            String primaryWord = !kebs.isEmpty() ? kebs.get(0) : kana;
 
-            Entry entryObj = new Entry(kana, romaji, glosses);
+            Entry entryObj = new Entry(primaryWord, kana, romaji, kebs, rebs, glosses, partsOfSpeech);
+            entries.add(entryObj);
 
-            for (String word : kebs) {
-                dict.putIfAbsent(word, entryObj);
+            for (String writing : kebs) {
+                dict.putIfAbsent(writing, entryObj);
             }
-            for (String word : rebs) {
-                dict.putIfAbsent(word, entryObj);
+            for (String reading : rebs) {
+                dict.putIfAbsent(reading, entryObj);
             }
+        }
+    }
+
+    private void setFactoryAttribute(DocumentBuilderFactory factory, String name, String value) {
+        try {
+            factory.setAttribute(name, value);
+        } catch (IllegalArgumentException e) {
+            // 某些 JDK 不支持部分 JAXP 属性，忽略即可。
+            System.err.println("JAXP 属性设置失败，忽略: " + name);
         }
     }
 
@@ -86,6 +144,45 @@ public class JMDictLoader {
             entry = getEntry(surface);
         }
         return entry;
+    }
+
+    public List<Entry> search(String query, int limit) {
+        if (query == null || query.isBlank()) {
+            return List.of();
+        }
+
+        String normalizedQuery = query.trim().toLowerCase(Locale.ROOT);
+        int safeLimit = Math.max(1, Math.min(limit, 50));
+        LinkedHashSet<Entry> results = new LinkedHashSet<>();
+
+        Entry exactEntry = getEntry(normalizedQuery);
+        if (exactEntry != null) {
+            results.add(exactEntry);
+        }
+
+        collectMatches(results, normalizedQuery, safeLimit, Entry::matchesExact);
+        collectMatches(results, normalizedQuery, safeLimit, Entry::matchesPrefix);
+        collectMatches(results, normalizedQuery, safeLimit, Entry::matchesContains);
+
+        return results.stream().limit(safeLimit).toList();
+    }
+
+    private void collectMatches(Set<Entry> results, String query, int limit, EntryMatcher matcher) {
+        if (results.size() >= limit) {
+            return;
+        }
+        for (Entry entry : entries) {
+            if (matcher.matches(entry, query)) {
+                results.add(entry);
+                if (results.size() >= limit) {
+                    return;
+                }
+            }
+        }
+    }
+
+    private interface EntryMatcher {
+        boolean matches(Entry entry, String query);
     }
 
     private String kanaToRomaji(String kana) {
